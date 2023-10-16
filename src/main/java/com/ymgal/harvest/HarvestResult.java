@@ -25,19 +25,19 @@ public class HarvestResult {
 
     //--- archives ---
 
-    @NotNull
+    @NotNull(message = "game 不能为 null")
     @Valid
     private GameArchive game;
 
-    @NotNull
+    @NotNull(message = "org 不能为 null")
     @Valid
     private OrgArchive org;
 
-    @NotNull
+    @NotNull(message = "personList 不能为 null")
     @Valid
     private List<PersonArchive> personList;
 
-    @NotNull
+    @NotNull(message = "characterList 不能为 null")
     @Valid
     private List<CharacterArchive> characterList;
 
