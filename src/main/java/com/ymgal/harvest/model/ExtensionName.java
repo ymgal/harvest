@@ -1,5 +1,6 @@
 package com.ymgal.harvest.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
@@ -28,6 +29,10 @@ public class ExtensionName {
     private String desc;
 
     public ExtensionName() {
+    }
+
+    public ExtensionName(String name) {
+        this.name = name;
     }
 
     public ExtensionName(String name, String type) {

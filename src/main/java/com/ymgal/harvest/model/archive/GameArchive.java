@@ -2,6 +2,7 @@ package com.ymgal.harvest.model.archive;
 
 import com.ymgal.harvest.model.ExtensionName;
 import com.ymgal.harvest.model.Website;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.validation.Valid;
@@ -82,7 +83,8 @@ public class GameArchive {
 
 
     @Data
-    public static class Characters {
+    @AllArgsConstructor
+    public class Characters {
 
         /**
          * 角色ID， vndbCid
@@ -106,7 +108,8 @@ public class GameArchive {
     }
 
     @Data
-    public static class Release {
+    @AllArgsConstructor
+    public class Release {
 
         /**
          * 发布的名称
@@ -144,7 +147,8 @@ public class GameArchive {
     }
 
     @Data
-    public static class Staff {
+    @AllArgsConstructor
+    public class Staff {
 
         /**
          * 人类档案ID _ 对应的vndbSID

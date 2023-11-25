@@ -1,7 +1,5 @@
 package com.ymgal.harvest;
 
-
-import com.sun.istack.internal.Nullable;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 
 import javax.validation.ConstraintViolation;
