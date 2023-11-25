@@ -1,6 +1,9 @@
 package com.ymgal.harvest;
 
-import java.net.InetSocketAddress;
+
+import com.ymgal.VndbHarvestMethod;
+import com.ymgal.dto.HarvestResult;
+
 
 public class HarvestTests {
 
@@ -12,6 +15,6 @@ public class HarvestTests {
 //            return r;
 //        }).thenAccept(System.out::println).join();
 
-        HarvestResult harvestResult = harvest.exec("https://vndb.org/v117", new InetSocketAddress(80));
+        HarvestResult vndbHarvest = VndbHarvestMethod.getVndbHarvest(17);
     }
 }

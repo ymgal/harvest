@@ -50,8 +50,8 @@ public class VndbHarvest extends Harvest {
         TcpHelper.Login();
         GameArchive gameAcrhive = getGameAcrhive(vnid);
         OrgArchive orgArchive = getOrgArchive(gameAcrhive.getDeveloper());
-        List<PersonArchive> personArchiveList = getPersonArchiveList(gameAcrhive.getStaff().stream().map(x -> x.getSid()).collect(Collectors.toList()));
-        List<CharacterArchive> characterArchiveList = getCharacterArchiveList(gameAcrhive.getCharacters().stream().map(x -> x.getCid()).collect(Collectors.toList()));
+        List<PersonArchive> personArchiveList = getPersonArchiveList(gameAcrhive.getStaff().stream().map(x -> x.getSid()).toArray(x->new Integer[x]));
+        List<CharacterArchive> characterArchiveList = getCharacterArchiveList(vnid);
 
         HarvestResult harvestResult = HarvestResult.ok(
                 gameAcrhive, orgArchive, personArchiveList, characterArchiveList
@@ -195,14 +195,14 @@ public class VndbHarvest extends Harvest {
         return orgArchive;
     }
 
-    protected List<PersonArchive> getPersonArchiveList(List<Integer> staffIds) {
+    protected List<PersonArchive> getPersonArchiveList(Integer[] staffIds) {
+        VndbResponse<Staff> StaffVndbResponse = VndbGetMethod.GetStaff(VndbFilters.Id.Equals(staffIds).toString());
+        if (StaffVndbResponse == null || StaffVndbResponse.getItems() == null || StaffVndbResponse.getItems().size() == 0) {
+            return null;
+        }
+        List<Staff> staffList =  StaffVndbResponse.getItems();
         List<PersonArchive> personArchiveList = new ArrayList<>();
-        for (Integer staffid : staffIds) {
-            VndbResponse<Staff> StaffVndbResponse = VndbGetMethod.GetStaff(VndbFilters.Id.Equals(staffid).toString());
-            if (StaffVndbResponse == null || StaffVndbResponse.getItems() == null || StaffVndbResponse.getItems().size() == 0) {
-                continue;
-            }
-            Staff staff = StaffVndbResponse.getItems().get(0);
+        for (Staff staff : staffList) {
             PersonArchive personArchive = new PersonArchive();
             personArchive.setVndbSid(staff.getId());
             personArchive.setName(staff.getName());
@@ -228,14 +228,15 @@ public class VndbHarvest extends Harvest {
         return personArchiveList;
     }
 
-    public List<CharacterArchive> getCharacterArchiveList(List<Integer> characterIds) {
+
+    public List<CharacterArchive> getCharacterArchiveList(Integer vnid) {
+        VndbResponse<Character> CharacterVndbResponse = VndbGetMethod.GetCharacter(VndbFilters.VisualNovel.Equals(vnid).toString());
+        if (CharacterVndbResponse == null || CharacterVndbResponse.getItems() == null || CharacterVndbResponse.getItems().size() == 0) {
+            return null;
+        }
+        List<Character> characterList = CharacterVndbResponse.getItems();
         List<CharacterArchive> characterArchiveList = new ArrayList<>();
-        for (Integer characterId : characterIds) {
-            VndbResponse<Character> CharacterVndbResponse = VndbGetMethod.GetCharacter(VndbFilters.VisualNovel.Equals(characterId).toString());
-            if (CharacterVndbResponse == null || CharacterVndbResponse.getItems() == null || CharacterVndbResponse.getItems().size() == 0) {
-                continue;
-            }
-            Character character = CharacterVndbResponse.getItems().get(0);
+        for (Character character : characterList) {
             CharacterArchive characterArchive = new CharacterArchive();
             characterArchive.setVndbCid(character.getId());
             characterArchive.setName(character.getName());
