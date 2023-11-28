@@ -64,7 +64,7 @@ public class GameArchive {
      * 相关网站
      */
     @Valid
-    //@NotNull(message = "网站不能为null")
+    @NotNull(message = "网站不能为null")
     private List<Website> website;
 
 

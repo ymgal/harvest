@@ -2,6 +2,7 @@ package com.ymgal.helper;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -16,6 +17,35 @@ import java.io.IOException;
  * @Description:
  */
 public class HttpClientHelper {
+
+    public static String getHtml(String url) throws IOException {
+
+        // 创建HttpClient对象
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        // 创建HttpGet请求
+        HttpGet httpGet = new HttpGet(url);
+        // 响应对象
+        CloseableHttpResponse response = null;
+        String html="";
+        try {
+            // 使用HttpClient发起请求
+            response = httpClient.execute(httpGet);
+            // 判断响应状态码是否为200
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // 获取返回数据
+                HttpEntity httpEntity = response.getEntity();
+                html = EntityUtils.toString(httpEntity, "UTF-8");
+            }
+        } finally {
+            // 释放连接
+            if (response != null) {
+                response.close();
+            }
+            httpClient.close();
+            return html;
+        }
+    }
+
 
     /**
      * 向指定 URL 发送POST方法的请求

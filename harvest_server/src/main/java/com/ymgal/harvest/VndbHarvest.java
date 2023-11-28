@@ -22,6 +22,7 @@ import com.ymgal.modelhttp.VndbFilter;
 import com.ymgal.modelhttp.enums.FilterName;
 import com.ymgal.modelhttp.enums.FilterOperator;
 import com.ymgal.modelhttp.vo.Vn;
+import com.ymgal.modelhttp.vo.common.Exlink;
 
 import java.net.InetSocketAddress;
 import java.time.LocalDate;
@@ -59,6 +60,9 @@ public class VndbHarvest extends Harvest {
         );
         TcpHelper.Loginout();
 
+
+
+
         System.out.println("HarvestResult：  " + JsonHelper.serialize(harvestResult));
 
         return harvestResult;
@@ -85,6 +89,13 @@ public class VndbHarvest extends Harvest {
         if (vn.getLanguages() != null) {
             archive.setHaveChinese(vn.getLanguages().stream().anyMatch(x -> "zh-Hans".equals(x) | "zh-Hant".equals(x)));
         }
+
+        // 获取Links
+        List<Exlink> linksByHtml = VndbGetMethodByHttp.getLinksByHtml(PREFIX+vnid);
+        List<Website> websites = linksByHtml.stream().map(x->{
+            return new Website(x.getName(),x.getUrl());
+        }).collect(Collectors.toList());
+        archive.setWebsite(websites);
 
         // 图片
         archive.setMainImg(vn.getImage().getUrl());
@@ -280,6 +291,5 @@ public class VndbHarvest extends Harvest {
         System.out.println("characterArchives：  " + JsonHelper.serialize(characterArchiveList));
         return characterArchiveList;
     }
-
 
 }

@@ -11,6 +11,15 @@ import com.ymgal.modelhttp.RequestBody;
 import com.ymgal.modelhttp.VndbFilter;
 import com.ymgal.modelhttp.vo.Release;
 import com.ymgal.modelhttp.vo.Vn;
+import com.ymgal.modelhttp.vo.common.Exlink;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Auther: lyl
@@ -61,5 +70,38 @@ public class VndbGetMethodByHttp {
         return VndbGetMethodByHttp.getInfoApi(PathPostfix.RELEASE, vndbFilter, new TypeReference<VndbResponse<Release>>() {
         });
     }
+
+
+    /**
+     * @param:
+     * @return:
+     * @auther: lyl
+     * @date: 2023/11/28 20:42
+     * 功能描述: 通过静态页面获取Links
+     */
+    public static List<Exlink> getLinksByHtml(String url) {
+        List<Exlink> exlinks = new ArrayList<>();
+        try {
+            String html = HttpClientHelper.getHtml(url);
+            Document document = Jsoup.parse(html);
+
+            Element linksElement = document.select("td:contains(Links)").first().nextElementSibling();
+            Elements links = linksElement.select("a");
+            for (Element link : links) {
+
+                Exlink exlink = new Exlink();
+                // 获取文本
+                exlink.setName(link.text());
+                // 获取链接
+                exlink.setUrl(link.attr("href"));
+                exlinks.add(exlink);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return exlinks;
+    }
+
+
 
 }
