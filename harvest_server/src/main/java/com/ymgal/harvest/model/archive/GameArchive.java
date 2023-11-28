@@ -6,9 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -66,8 +64,9 @@ public class GameArchive {
      * 相关网站
      */
     @Valid
-    @NotNull(message = "网站不能为null")
+    //@NotNull(message = "网站不能为null")
     private List<Website> website;
+
 
     @Valid
     @NotNull(message = "游戏档案中的characters 不能为null")
@@ -103,7 +102,9 @@ public class GameArchive {
          * 2=配角
          */
         @NotNull(message = "关联的角色定位不能为null")
-        @Size(min = 0, max = 1, message = "position 填写错误，只能是0/1间的值")
+        //@Size(min = 0, max = 1, message = "position 填写错误，只能是0/1间的值")
+        @Min(0)
+        @Max(1)
         private Integer position;
     }
 

@@ -4,9 +4,7 @@ import com.ymgal.harvest.model.ExtensionName;
 import lombok.Data;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -31,6 +29,7 @@ public class CharacterArchive {
 
     //性别： 0=未知 1=男 2=女
     @NotNull(message = "性别不能为null")
-    @Size(min = 0, max = 1, message = "gender 填写错误，只能是0/1间的值")
+    @Min(0)
+    @Max(2)
     private Integer gender;
 }

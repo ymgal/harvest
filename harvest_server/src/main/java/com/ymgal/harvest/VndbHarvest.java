@@ -101,6 +101,7 @@ public class VndbHarvest extends Harvest {
         archive.setReleaseDate(LocalDate.parse(vn.getReleased()));
 
         // 扩展名
+        archive.setExtensionName(new ArrayList<>());
         if (vn.getTitles() != null) {
             List<ExtensionName> extensionNames = vn.getTitles().stream().map(x -> {
                 return new ExtensionName(x.getTitle(), x.getLang());
@@ -138,8 +139,10 @@ public class VndbHarvest extends Harvest {
                         String.valueOf(x.getMinage()));
             }).collect(Collectors.toList());
             archive.setReleases(releases);
-        }
 
+            //是否受限制
+            archive.setRestricted(release_tcp.getItems().stream().anyMatch(x->x.getMinage()>0));
+        }
 
         //Staff
         VndbResponse<VisualNovel> visualNovelVndbResponse = VndbGetMethod.GetVisualNovel(VndbFilters.Id.Equals(vnid).toString());
@@ -176,13 +179,16 @@ public class VndbHarvest extends Harvest {
             String title = producer.getLinks().getWikidata() == null ? producer.getLinks().getWikipedia() : producer.getLinks().getWikidata();
             orgArchive.setWebsite(new ArrayList<Website>() {
                 {
-                    this.add(new Website(title,
-                            producer.getLinks().getHomepage()));
+                    if (title!=null && producer.getLinks()!=null && producer.getLinks().getHomepage()!=null){
+                        this.add(new Website(title,
+                                producer.getLinks().getHomepage()));
+                    }
                 }
             });
         }
 
         //只有别名
+        orgArchive.setExtensionNames(new ArrayList<>());
         orgArchive.setExtensionNames(new ArrayList<ExtensionName>() {
             {
                 this.add(new ExtensionName(producer.getAliases()));
@@ -204,6 +210,7 @@ public class VndbHarvest extends Harvest {
             PersonArchive personArchive = new PersonArchive();
             personArchive.setVndbSid(staff.getId());
             personArchive.setName(staff.getName());
+            personArchive.setExtensionNames(new ArrayList<>());
             if (staff.getAliases() != null) {
                 personArchive.setExtensionNames(staff.getAliases().stream().map(a -> {
                     return new ExtensionName((String) a[2] == null ? (String) a[1] : (String) a[2]);
@@ -214,11 +221,19 @@ public class VndbHarvest extends Harvest {
             if (staff.getLinks() != null) {
                 String title = staff.getLinks().getWikidata() == null ? staff.getLinks().getWikipedia() : staff.getLinks().getWikidata();
                 personArchive.setWebsite(new ArrayList<Website>() {{
-                    this.add(new Website(title, staff.getLinks().getHomepage()));
+                    if (title!=null && staff.getLinks()!=null && staff.getLinks().getHomepage()!=null){
+                        this.add(new Website(title, staff.getLinks().getHomepage()));
+                    }
                 }});
             }
+            //默认0未知 1男 2女
+            personArchive.setGender(0);
             if (staff.getGender() != null) {
-                personArchive.setGender(staff.getGender().equals("m") ? 1 : 0);
+                if (staff.getGender().equals("m")){
+                    personArchive.setGender(1);
+                }else if (staff.getGender().equals("f")){
+                    personArchive.setGender(2);
+                }
             }
             personArchiveList.add(personArchive);
         }
@@ -238,6 +253,8 @@ public class VndbHarvest extends Harvest {
             characterArchive.setVndbCid(character.getId());
             characterArchive.setName(character.getName());
 
+            // 扩展名
+            characterArchive.setExtensionNames(new ArrayList<>());
             if (character.getAliases() != null) {
                 String[] aliaseList = character.getAliases().split("\n");
                 characterArchive.setExtensionNames(Arrays.stream(aliaseList).map(x -> new ExtensionName(x)).collect(Collectors.toList()));
@@ -248,8 +265,15 @@ public class VndbHarvest extends Harvest {
                 characterArchive.setBirthday(LocalDate.of(3000, character.getBirthday().get(1), character.getBirthday().get(0)));
             }
             characterArchive.setMainImg(character.getImage());
+
+            //默认0未知 1男 2女
+            characterArchive.setGender(0);
             if (character.getGender() != null) {
-                characterArchive.setGender(character.getGender().equals("m") ? 1 : 0);
+                if (character.getGender().equals("m")){
+                    characterArchive.setGender(1);
+                }else if (character.getGender().equals("f")){
+                    characterArchive.setGender(2);
+                }
             }
             characterArchiveList.add(characterArchive);
         }
