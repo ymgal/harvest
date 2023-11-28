@@ -121,7 +121,8 @@ public class VndbHarvest extends Harvest {
         }
 
         //简介
-        archive.setIntroduction(vn.getDescription());
+        archive.setIntroduction(vn.getDescription()==null?"":vn.getDescription());
+
 
         // 角色
         VndbResponse<Character> character_tcp = VndbGetMethod.GetCharacter(VndbFilters.VisualNovel.Equals(vnid).toString());
@@ -183,7 +184,10 @@ public class VndbHarvest extends Harvest {
         orgArchive.setVndbPid(orgid);
         orgArchive.setOrgName(producer.getName());
         orgArchive.setCountry(producer.getLanguage());
-        orgArchive.setIntroduction(producer.getDescription());
+
+        orgArchive.setIntroduction(producer.getDescription()==null?"":producer.getDescription());
+
+
 
         // 网站
         if (producer.getLinks() != null) {
@@ -227,7 +231,9 @@ public class VndbHarvest extends Harvest {
                     return new ExtensionName((String) a[2] == null ? (String) a[1] : (String) a[2]);
                 }).collect(Collectors.toList()));
             }
-            personArchive.setIntroduction(staff.getDescription());
+
+            personArchive.setIntroduction(staff.getDescription()==null?"":staff.getDescription());
+
             personArchive.setCountry(staff.getLanguage());
             if (staff.getLinks() != null) {
                 String title = staff.getLinks().getWikidata() == null ? staff.getLinks().getWikipedia() : staff.getLinks().getWikidata();
@@ -271,7 +277,7 @@ public class VndbHarvest extends Harvest {
                 characterArchive.setExtensionNames(Arrays.stream(aliaseList).map(x -> new ExtensionName(x)).collect(Collectors.toList()));
             }
 
-            characterArchive.setIntroduction(character.getDescription());
+            characterArchive.setIntroduction(character.getDescription()==null?"":character.getDescription());
             if (character.getBirthday() != null && character.getBirthday().get(0) != null && character.getBirthday().get(1) != null) {
                 characterArchive.setBirthday(LocalDate.of(3000, character.getBirthday().get(1), character.getBirthday().get(0)));
             }

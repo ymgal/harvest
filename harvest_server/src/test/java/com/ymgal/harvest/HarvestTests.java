@@ -7,7 +7,7 @@ public class HarvestTests {
 
     public static void main(String[] args) throws Exception {
         //clannad
-        Harvest harvest = new VndbHarvest("https://vndb.org/v4");
+        Harvest harvest = new VndbHarvest("https://vndb.org/v17");
         harvest.get().thenApply(r -> {
             ValidateUtil.validate(r);
             return r;
