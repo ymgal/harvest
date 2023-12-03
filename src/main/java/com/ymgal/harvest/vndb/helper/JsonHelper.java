@@ -1,12 +1,21 @@
 package com.ymgal.harvest.vndb.helper;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -16,6 +25,32 @@ import java.util.Map;
  */
 public class JsonHelper {
     public static ObjectMapper mapper = new ObjectMapper();
+
+    static {
+        //序列化的时候序列对象的所有非空属性
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        //反序列化的时候如果多了其他属性,不抛出异常
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        //如果是空对象的时候,不抛异常
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+        //不使用默认的dateTime进行序列化,
+        mapper.configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false);
+
+        SimpleModule module = new SimpleModule();
+
+        //PS：这里只是单纯占位。 要序列化 LocalDate/LocalDateTime 成 2014-01-01 这种标准格式则需要自定义
+        module.addSerializer(LocalDate.class, LocalDateSerializer.INSTANCE);
+        module.addSerializer(LocalDateTime.class, LocalDateTimeSerializer.INSTANCE);
+
+        //使用JSR310提供的序列化类,里面包含了大量的JDK8时间序列化类
+        mapper.registerModules(new JavaTimeModule(), module);
+
+        //语言环境
+        mapper.setLocale(Locale.CHINA);
+    }
 
     /**
      * @param obj

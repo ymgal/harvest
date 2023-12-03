@@ -16,7 +16,6 @@ import com.ymgal.harvest.model.ExtensionName;
 import com.ymgal.harvest.model.Website;
 import com.ymgal.harvest.model.archive.CharacterArchive;
 import com.ymgal.harvest.model.archive.GameArchive;
-import com.ymgal.harvest.vndb.helper.JsonHelper;
 import com.ymgal.harvest.vndb.model.Character.Character;
 import com.ymgal.harvest.vndb.model.Character.VoiceActorMetadata;
 import com.ymgal.harvest.vndb.model.Producer.Producer;
@@ -29,6 +28,8 @@ import java.net.InetSocketAddress;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
 
 public class VndbHarvest extends Harvest {
 
@@ -47,7 +48,6 @@ public class VndbHarvest extends Harvest {
 
     @Override
     protected HarvestResult exec(String gameUrl, InetSocketAddress proxy) {
-        //TODO...
 
         Integer vnid = Integer.parseInt(gameUrl.split(PREFIX)[1]);
         TcpHelper.Login();
@@ -60,11 +60,6 @@ public class VndbHarvest extends Harvest {
                 gameAcrhive, orgArchive, personArchiveList, characterArchiveList
         );
         TcpHelper.Loginout();
-
-
-
-
-        System.out.println("HarvestResult：  " + JsonHelper.serialize(harvestResult));
 
         return harvestResult;
     }
@@ -92,9 +87,9 @@ public class VndbHarvest extends Harvest {
         }
 
         // 获取Links
-        List<Exlink> linksByHtml = VndbGetMethodByHttp.getLinksByHtml(PREFIX+vnid);
-        List<Website> websites = linksByHtml.stream().map(x->{
-            return new Website(x.getName(),x.getUrl());
+        List<Exlink> linksByHtml = VndbGetMethodByHttp.getLinksByHtml(PREFIX + vnid);
+        List<Website> websites = linksByHtml.stream().map(x -> {
+            return new Website(x.getName(), x.getUrl());
         }).collect(Collectors.toList());
         archive.setWebsite(websites);
 
@@ -115,14 +110,15 @@ public class VndbHarvest extends Harvest {
         // 扩展名
         archive.setExtensionName(new ArrayList<>());
         if (vn.getTitles() != null) {
-            List<ExtensionName> extensionNames = vn.getTitles().stream().map(x -> {
-                return new ExtensionName(x.getTitle(), x.getLang());
-            }).collect(Collectors.toList());
+            List<ExtensionName> extensionNames = vn.getTitles().stream()
+                    .filter(x -> x.getTitle() != null && x.getTitle().trim().length() > 0)
+                    .map(x -> new ExtensionName(x.getTitle(), x.getLang()))
+                    .collect(toList());
             archive.setExtensionName(extensionNames);
         }
 
         //简介
-        archive.setIntroduction(vn.getDescription()==null?"":vn.getDescription());
+        archive.setIntroduction(vn.getDescription() == null ? "" : vn.getDescription());
 
 
         // 角色
@@ -154,7 +150,7 @@ public class VndbHarvest extends Harvest {
             archive.setReleases(releases);
 
             //是否受限制
-            archive.setRestricted(release_tcp.getItems().stream().anyMatch(x->x.getMinage()>0));
+            archive.setRestricted(release_tcp.getItems().stream().anyMatch(x -> x.getMinage() > 0));
         }
 
         //Staff
@@ -167,7 +163,6 @@ public class VndbHarvest extends Harvest {
             archive.setStaff(staff);
         }
 
-        System.out.println("GameArchive：  " + JsonHelper.serialize(archive));
         return archive;
     }
 
@@ -186,8 +181,7 @@ public class VndbHarvest extends Harvest {
         orgArchive.setOrgName(producer.getName());
         orgArchive.setCountry(producer.getLanguage());
 
-        orgArchive.setIntroduction(producer.getDescription()==null?"":producer.getDescription());
-
+        orgArchive.setIntroduction(producer.getDescription() == null ? "" : producer.getDescription());
 
 
         // 网站
@@ -195,7 +189,7 @@ public class VndbHarvest extends Harvest {
             String title = producer.getLinks().getWikidata() == null ? producer.getLinks().getWikipedia() : producer.getLinks().getWikidata();
             orgArchive.setWebsite(new ArrayList<Website>() {
                 {
-                    if (title!=null && producer.getLinks()!=null && producer.getLinks().getHomepage()!=null){
+                    if (title != null && producer.getLinks() != null && producer.getLinks().getHomepage() != null) {
                         this.add(new Website(title,
                                 producer.getLinks().getHomepage()));
                     }
@@ -204,13 +198,10 @@ public class VndbHarvest extends Harvest {
         }
 
         //只有别名
-        orgArchive.setExtensionNames(new ArrayList<>());
-        orgArchive.setExtensionNames(new ArrayList<ExtensionName>() {
-            {
-                this.add(new ExtensionName(producer.getAliases()));
-            }
-        });
-        System.out.println("orgArchive：  " + JsonHelper.serialize(orgArchive));
+        orgArchive.setExtensionNames(Collections.emptyList());
+        if (producer.getAliases() != null && producer.getAliases().trim().length() > 0) {
+            orgArchive.setExtensionNames(Collections.singletonList(new ExtensionName(producer.getAliases())));
+        }
 
         return orgArchive;
     }
@@ -227,19 +218,24 @@ public class VndbHarvest extends Harvest {
             personArchive.setVndbSid(staff.getId());
             personArchive.setName(staff.getName());
             personArchive.setExtensionNames(new ArrayList<>());
+
             if (staff.getAliases() != null) {
-                personArchive.setExtensionNames(staff.getAliases().stream().map(a -> {
-                    return new ExtensionName((String) a[2] == null ? (String) a[1] : (String) a[2]);
-                }).collect(Collectors.toList()));
+                List<ExtensionName> names = staff.getAliases()
+                        .stream()
+                        .map(a -> (String) (a[2] == null ? a[1] : a[2]))
+                        .filter(name -> name != null && name.trim().length() > 0)
+                        .map(ExtensionName::new)
+                        .collect(toList());
+                personArchive.setExtensionNames(names);
             }
 
-            personArchive.setIntroduction(staff.getDescription()==null?"":staff.getDescription());
+            personArchive.setIntroduction(staff.getDescription() == null ? "" : staff.getDescription());
 
             personArchive.setCountry(staff.getLanguage());
             if (staff.getLinks() != null) {
                 String title = staff.getLinks().getWikidata() == null ? staff.getLinks().getWikipedia() : staff.getLinks().getWikidata();
                 personArchive.setWebsite(new ArrayList<Website>() {{
-                    if (title!=null && staff.getLinks()!=null && staff.getLinks().getHomepage()!=null){
+                    if (title != null && staff.getLinks() != null && staff.getLinks().getHomepage() != null) {
                         this.add(new Website(title, staff.getLinks().getHomepage()));
                     }
                 }});
@@ -247,15 +243,15 @@ public class VndbHarvest extends Harvest {
             //默认0未知 1男 2女
             personArchive.setGender(0);
             if (staff.getGender() != null) {
-                if (staff.getGender().equals("m")){
+                if (staff.getGender().equals("m")) {
                     personArchive.setGender(1);
-                }else if (staff.getGender().equals("f")){
+                } else if (staff.getGender().equals("f")) {
                     personArchive.setGender(2);
                 }
             }
             personArchiveList.add(personArchive);
         }
-        System.out.println("personArchiveList：  " + JsonHelper.serialize(personArchiveList));
+
         return personArchiveList;
     }
 
@@ -275,10 +271,15 @@ public class VndbHarvest extends Harvest {
             characterArchive.setExtensionNames(new ArrayList<>());
             if (character.getAliases() != null) {
                 String[] aliaseList = character.getAliases().split("\n");
-                characterArchive.setExtensionNames(Arrays.stream(aliaseList).map(x -> new ExtensionName(x)).collect(Collectors.toList()));
+
+                List<ExtensionName> names = Arrays.stream(aliaseList)
+                        .filter(x -> x != null && x.trim().length() > 0)
+                        .map(x -> new ExtensionName(x))
+                        .collect(toList());
+                characterArchive.setExtensionNames(names);
             }
 
-            characterArchive.setIntroduction(character.getDescription()==null?"":character.getDescription());
+            characterArchive.setIntroduction(character.getDescription() == null ? "" : character.getDescription());
             if (character.getBirthday() != null && character.getBirthday().get(0) != null && character.getBirthday().get(1) != null) {
                 characterArchive.setBirthday(LocalDate.of(3000, character.getBirthday().get(1), character.getBirthday().get(0)));
             }
@@ -287,15 +288,14 @@ public class VndbHarvest extends Harvest {
             //默认0未知 1男 2女
             characterArchive.setGender(0);
             if (character.getGender() != null) {
-                if (character.getGender().equals("m")){
+                if (character.getGender().equals("m")) {
                     characterArchive.setGender(1);
-                }else if (character.getGender().equals("f")){
+                } else if (character.getGender().equals("f")) {
                     characterArchive.setGender(2);
                 }
             }
             characterArchiveList.add(characterArchive);
         }
-        System.out.println("characterArchives：  " + JsonHelper.serialize(characterArchiveList));
         return characterArchiveList;
     }
 
