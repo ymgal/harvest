@@ -180,6 +180,10 @@ public class VndbHarvest extends Harvest {
 
         orgArchive.setVndbPid(orgid);
         orgArchive.setOrgName(producer.getOriginal());
+        if (Objects.isNull(orgArchive.getOrgName())){
+            orgArchive.setOrgName(producer.getName());
+        }
+
         orgArchive.setCountry(producer.getLanguage());
 
         orgArchive.setIntroduction(producer.getDescription() == null ? "" : producer.getDescription());
