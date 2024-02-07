@@ -79,7 +79,7 @@ public class VndbHarvest extends Harvest {
         // ID
         archive.setVndbId(Integer.parseInt(vn.getId().replace("v", "")));
         // 标题
-        archive.setName(vn.getTitle());
+        archive.setName(vn.getAlttitle());
 
         // 是否有汉化
         if (vn.getLanguages() != null) {
@@ -112,6 +112,7 @@ public class VndbHarvest extends Harvest {
         if (vn.getTitles() != null) {
             List<ExtensionName> extensionNames = vn.getTitles().stream()
                     .filter(x -> x.getTitle() != null && x.getTitle().trim().length() > 0)
+                    .filter(x -> !Objects.equals(x.getTitle(), archive.getName()))//不等于原名
                     .map(x -> new ExtensionName(x.getTitle(), x.getLang()))
                     .collect(toList());
             archive.setExtensionName(extensionNames);
@@ -158,7 +159,7 @@ public class VndbHarvest extends Harvest {
         if (visualNovelVndbResponse.getItems() != null) {
             VisualNovel vn_tcp = visualNovelVndbResponse.getItems().get(0);
             List<GameArchive.Staff> staff = vn_tcp.getStaff().stream().map(x -> {
-                return new GameArchive().new Staff(x.getSid(), x.getName(), x.getNote(), x.getRole());
+                return new GameArchive().new Staff(x.getSid(), x.getOriginal(), x.getNote(), x.getRole());
             }).collect(Collectors.toList());
             archive.setStaff(staff);
         }
@@ -178,7 +179,7 @@ public class VndbHarvest extends Harvest {
         Producer producer = ProducerVndbResponse.getItems().get(0);
 
         orgArchive.setVndbPid(orgid);
-        orgArchive.setOrgName(producer.getName());
+        orgArchive.setOrgName(producer.getOriginal());
         orgArchive.setCountry(producer.getLanguage());
 
         orgArchive.setIntroduction(producer.getDescription() == null ? "" : producer.getDescription());
@@ -216,7 +217,7 @@ public class VndbHarvest extends Harvest {
         for (Staff staff : staffList) {
             PersonArchive personArchive = new PersonArchive();
             personArchive.setVndbSid(staff.getId());
-            personArchive.setName(staff.getName());
+            personArchive.setName(staff.getOriginal());
             personArchive.setExtensionNames(new ArrayList<>());
 
             if (staff.getAliases() != null) {
@@ -265,7 +266,7 @@ public class VndbHarvest extends Harvest {
         for (Character character : characterList) {
             CharacterArchive characterArchive = new CharacterArchive();
             characterArchive.setVndbCid(character.getId());
-            characterArchive.setName(character.getName());
+            characterArchive.setName(character.getOriginal());
 
             // 扩展名
             characterArchive.setExtensionNames(new ArrayList<>());
@@ -280,6 +281,10 @@ public class VndbHarvest extends Harvest {
             }
 
             characterArchive.setIntroduction(character.getDescription() == null ? "" : character.getDescription());
+
+            //目前一堆无意义的英文，还是直接去掉吧
+            characterArchive.setIntroduction("");
+
             if (character.getBirthday() != null && character.getBirthday().get(0) != null && character.getBirthday().get(1) != null) {
                 characterArchive.setBirthday(LocalDate.of(3000, character.getBirthday().get(1), character.getBirthday().get(0)));
             }
