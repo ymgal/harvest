@@ -228,8 +228,9 @@ public class VndbHarvest extends Harvest {
     public static List<PersonArchive> getPersonArchiveList(Integer[] staffIds) {
         VndbResponse<Staff> StaffVndbResponse = VndbGetMethod.GetStaff(VndbFilters.Id.Equals(staffIds).toString());
         if (StaffVndbResponse == null || StaffVndbResponse.getItems() == null || StaffVndbResponse.getItems().size() == 0) {
-            return null;
+            return Collections.emptyList();
         }
+
         List<Staff> staffList = StaffVndbResponse.getItems();
         List<PersonArchive> personArchiveList = new ArrayList<>();
         for (Staff staff : staffList) {
@@ -277,8 +278,9 @@ public class VndbHarvest extends Harvest {
     public static List<CharacterArchive> getCharacterArchiveList(Integer vnid) {
         VndbResponse<Character> CharacterVndbResponse = VndbGetMethod.GetCharacter(VndbFilters.VisualNovel.Equals(vnid).toString());
         if (CharacterVndbResponse == null || CharacterVndbResponse.getItems() == null || CharacterVndbResponse.getItems().size() == 0) {
-            return null;
+            return Collections.emptyList();
         }
+
         List<Character> characterList = CharacterVndbResponse.getItems();
         List<CharacterArchive> characterArchiveList = new ArrayList<>();
         for (Character character : characterList) {

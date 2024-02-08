@@ -10,7 +10,7 @@ public class HarvestTests {
 
     public static void main(String[] args) throws Exception {
         //https://vndb.org/v33272
-        Harvest harvest = new VndbHarvest("https://vndb.org/v47955");
+        Harvest harvest = new VndbHarvest("https://vndb.org/v49163");
 
         harvest.get().thenApply(r -> {
             Duration between = Duration.between(r.getTaskStartTime(), LocalDateTime.now());
