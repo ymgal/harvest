@@ -57,7 +57,7 @@ public class GameArchive {
 
     private LocalDate releaseDate;
 
-    @NotNull(message = "是否是受限制的不能为null")
+    @NotNull(message = "是否是受限制的 不能为null")
     private Boolean restricted;
 
     /**

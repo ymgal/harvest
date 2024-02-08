@@ -169,7 +169,7 @@ public class VndbHarvest extends Harvest {
             archive.setReleases(releases);
 
             //是否受限制
-            archive.setRestricted(release_tcp.getItems().stream().anyMatch(x -> x.getMinage() > 0));
+            archive.setRestricted(release_tcp.getItems().stream().map(x -> x.getMinage()).filter(Objects::nonNull).anyMatch(x -> x > 0));
         }
 
         //Staff
