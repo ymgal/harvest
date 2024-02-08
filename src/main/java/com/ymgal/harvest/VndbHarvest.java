@@ -23,6 +23,7 @@ import com.ymgal.harvest.vndb.model.VisualNovel.VisualNovel;
 import com.ymgal.harvest.vndb.model.VndbResponse;
 import com.ymgal.harvest.vndb.modelhttp.enums.FilterName;
 import com.ymgal.harvest.vndb.modelhttp.enums.FilterOperator;
+import org.jsoup.internal.StringUtil;
 
 import java.net.InetSocketAddress;
 import java.time.LocalDate;
@@ -145,14 +146,26 @@ public class VndbHarvest extends Harvest {
         // 发售信息， 可能发售了多个平台  国家没有只有语言  LocalDate格式化的问题
         VndbResponse<Release> release_tcp = VndbGetMethod.GetRelease(VndbFilters.VisualNovel.Equals(vnid).toString());
         if (release_tcp.getItems() != null) {
-            List<GameArchive.Release> releases = release_tcp.getItems().stream().map(x -> {
-                return new GameArchive().new Release(x.getTitle(), x.getWebsite(),
-                        x.getPlatforms().stream().collect(Collectors.joining(",")),
+            List<GameArchive.Release> releases = release_tcp.getItems().stream()
+                    .map(x -> {
+                        GameArchive.Release release = new GameArchive.Release();
+                        release.setReleaseName(x.getTitle());
+                        release.setRelatedLink(x.getWebsite());
+                        release.setPlatform(x.getPlatforms().stream().collect(Collectors.joining(",")));
                         // TODO 时间格式化问题  LocalDate.parse(x.getReleased()),
-                        DateTimeHelper.DateFormatConvert(x.getReleased()),
-                        x.getLanguages().stream().collect(Collectors.joining(",")),
-                        String.valueOf(x.getMinage()));
-            }).collect(Collectors.toList());
+                        release.setReleaseDate(DateTimeHelper.DateFormatConvert(x.getReleased()));
+                        release.setCountry(x.getLanguages().stream().collect(Collectors.joining(",")));
+                        release.setRestrictionLevel(String.valueOf(x.getMinage()));
+
+                        return release;
+                    }).collect(Collectors.toList());
+
+            releases.removeIf(r -> StringUtil.isBlank(r.getReleaseName())
+                    || StringUtil.isBlank(r.getPlatform())
+                    || StringUtil.isBlank(r.getCountry())
+                    || StringUtil.isBlank(r.getRestrictionLevel())
+            );
+
             archive.setReleases(releases);
 
             //是否受限制

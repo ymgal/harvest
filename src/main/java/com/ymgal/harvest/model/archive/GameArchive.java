@@ -109,8 +109,7 @@ public class GameArchive {
     }
 
     @Data
-    @AllArgsConstructor
-    public class Release {
+    public static class Release {
 
         /**
          * 发布的名称
