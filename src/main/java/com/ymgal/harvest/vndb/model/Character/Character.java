@@ -1,12 +1,13 @@
 package com.ymgal.harvest.vndb.model.Character;
 
+import com.ymgal.harvest.model.RealNameLiberation;
 import com.ymgal.harvest.vndb.model.Common.ImageRating;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class Character {
+public class Character implements RealNameLiberation {
     /// <summary>
     /// Character's ID on Vndb
     /// </summary>

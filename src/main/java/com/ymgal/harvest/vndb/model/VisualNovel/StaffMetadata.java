@@ -1,12 +1,13 @@
 package com.ymgal.harvest.vndb.model.VisualNovel;
 
+import com.ymgal.harvest.model.RealNameLiberation;
 import lombok.Data;
 
 /// <summary>
 /// Staff Metadata
 /// </summary>
 @Data
-public class StaffMetadata {
+public class StaffMetadata implements RealNameLiberation {
     /// <summary>
     /// Staff ID
     /// </summary>

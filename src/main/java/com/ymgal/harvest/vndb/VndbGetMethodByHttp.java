@@ -12,6 +12,7 @@ import com.ymgal.harvest.vndb.modelhttp.vo.Vn;
 import com.ymgal.harvest.vndb.modelhttp.vo.common.Exlink;
 import com.ymgal.harvest.vndb.helper.JsonHelper;
 import com.ymgal.harvest.vndb.model.VndbResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,6 +20,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -26,7 +28,6 @@ import java.util.List;
  * @Date: 2023/10/13 09:13
  * @Description:
  */
-
 public class VndbGetMethodByHttp {
 
 
@@ -85,8 +86,10 @@ public class VndbGetMethodByHttp {
             String html = HttpClientHelper.getHtml(url);
             Document document = Jsoup.parse(html);
 
-            Element linksElement = document.select("td:contains(Links)").first().nextElementSibling();
-            Elements links = linksElement.select("a");
+            Elements htmlLinks = document.select("td:contains(Links)");
+            if (htmlLinks.size() == 0) return Collections.emptyList();
+
+            Elements links = htmlLinks.first().nextElementSibling().select("a");
             for (Element link : links) {
 
                 Exlink exlink = new Exlink();

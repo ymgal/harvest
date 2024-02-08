@@ -1,12 +1,13 @@
 package com.ymgal.harvest.vndb.model.Common;
 
+import com.ymgal.harvest.model.RealNameLiberation;
 import lombok.Data;
 
 /// <summary>
 /// Common Producer properties
 /// </summary>
 @Data
-public class ProducerCommon {
+public class ProducerCommon implements RealNameLiberation {
     /// <summary>
     /// Producer ID
     /// </summary>

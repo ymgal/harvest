@@ -1,5 +1,6 @@
 package com.ymgal.harvest.vndb.model.Staff;
 
+import com.ymgal.harvest.model.RealNameLiberation;
 import lombok.Data;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 /// Staff Information
 /// </summary>
 @Data
-public class Staff {
+public class Staff implements RealNameLiberation {
     /// <summary>
     /// Staff Id
     /// </summary>
