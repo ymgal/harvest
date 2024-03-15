@@ -77,6 +77,13 @@ public class VndbHarvest extends Harvest {
         Vn vn = responseBody.getItems().get(0);
 
         GameArchive archive = new GameArchive();
+
+        archive.setExtensionName(Collections.emptyList());
+        archive.setReleases(Collections.emptyList());
+        archive.setRestricted(true);
+        archive.setCharacters(Collections.emptyList());
+        archive.setStaff(Collections.emptyList());
+
         // ID
         archive.setVndbId(Integer.parseInt(vn.getId().replace("v", "")));
 
@@ -114,7 +121,6 @@ public class VndbHarvest extends Harvest {
         archive.setReleaseDate(LocalDate.parse(vn.getReleased()));
 
         // 扩展名
-        archive.setExtensionName(new ArrayList<>());
         if (vn.getTitles() != null) {
             List<ExtensionName> extensionNames = vn.getTitles().stream()
                     .filter(x -> x.getTitle() != null && x.getTitle().trim().length() > 0)
@@ -130,7 +136,7 @@ public class VndbHarvest extends Harvest {
 
         // 角色
         VndbResponse<Character> character_tcp = VndbGetMethod.GetCharacter(VndbFilters.VisualNovel.Equals(vnid).toString());
-        if (character_tcp.getItems() != null) {
+        if (character_tcp != null && character_tcp.getItems() != null) {
             List<GameArchive.Characters> characters = character_tcp.getItems().stream().map(x -> {
                 return new GameArchive().new Characters(
                         x.getId(),
@@ -145,7 +151,7 @@ public class VndbHarvest extends Harvest {
 
         // 发售信息， 可能发售了多个平台  国家没有只有语言  LocalDate格式化的问题
         VndbResponse<Release> release_tcp = VndbGetMethod.GetRelease(VndbFilters.VisualNovel.Equals(vnid).toString());
-        if (release_tcp.getItems() != null) {
+        if (release_tcp != null && release_tcp.getItems() != null) {
             List<GameArchive.Release> releases = release_tcp.getItems().stream()
                     .map(x -> {
                         GameArchive.Release release = new GameArchive.Release();
@@ -174,7 +180,7 @@ public class VndbHarvest extends Harvest {
 
         //Staff
         VndbResponse<VisualNovel> visualNovelVndbResponse = VndbGetMethod.GetVisualNovel(VndbFilters.Id.Equals(vnid).toString());
-        if (visualNovelVndbResponse.getItems() != null) {
+        if (visualNovelVndbResponse != null && visualNovelVndbResponse.getItems() != null) {
             VisualNovel vn_tcp = visualNovelVndbResponse.getItems().get(0);
             List<GameArchive.Staff> staff = vn_tcp.getStaff().stream().map(x ->
                     new GameArchive().new Staff(x.getSid(), x.realName(), x.getNote(), x.getRole())
