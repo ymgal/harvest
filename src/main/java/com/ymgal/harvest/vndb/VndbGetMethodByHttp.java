@@ -89,7 +89,12 @@ public class VndbGetMethodByHttp {
             Elements htmlLinks = document.select("td:contains(Links)");
             if (htmlLinks.size() == 0) return Collections.emptyList();
 
+            if (htmlLinks.first() == null || htmlLinks.first().nextElementSibling() == null)
+                return Collections.emptyList();
+
             Elements links = htmlLinks.first().nextElementSibling().select("a");
+            if (links == null) Collections.emptyList();
+
             for (Element link : links) {
 
                 Exlink exlink = new Exlink();
@@ -104,7 +109,6 @@ public class VndbGetMethodByHttp {
         }
         return exlinks;
     }
-
 
 
 }
