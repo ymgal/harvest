@@ -117,8 +117,11 @@ public class VndbHarvest extends Harvest {
             archive.setDeveloper(Integer.parseInt(vn.getDevelopers().get(0).getId().replace("p", "")));
         }
 
-        // 发售日期
-        archive.setReleaseDate(LocalDate.parse(vn.getReleased()));
+        // 发售日期, TBA为未知，不设置
+        String releaseDate = vn.getReleased();
+        if (!Objects.equals("TBA", releaseDate)) {
+            archive.setReleaseDate(LocalDate.parse(releaseDate));
+        }
 
         // 扩展名
         if (vn.getTitles() != null) {
