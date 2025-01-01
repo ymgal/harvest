@@ -22,7 +22,7 @@ public class GameArchive {
      * 开发商ID
      * vndb的pid
      */
-    @NotNull(message = "开发商ID不能为null")
+//    @NotNull(message = "开发商ID不能为null")
     private Integer developer;
 
     /**

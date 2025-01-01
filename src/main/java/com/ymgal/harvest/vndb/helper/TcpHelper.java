@@ -12,13 +12,12 @@ import static com.ymgal.harvest.vndb.Constants.*;
  */
 public class TcpHelper {
 
-    private static Socket socket;
+    private Socket socket;
 
-    private static OutputStream outputStream;
-    private static InputStream inputStream;
+    private OutputStream outputStream;
+    private InputStream inputStream;
 
-
-    public static void Login() {
+    public void login() {
         try {
             socket = new Socket(ApiDomain, ApiPort);
             //socket = new Socket("localhost", 8168);
@@ -50,10 +49,10 @@ public class TcpHelper {
         }
     }
 
-    public static void sendData(String cmd) {
+    public void sendData(String cmd) {
 
         if (!socket.isConnected()) {
-            Login();
+            login();
         }
         String printText = cmd + EotChar;
 //            OutputStream outputStream = socket.getOutputStream();        //建立客户端信息输出流
@@ -64,11 +63,11 @@ public class TcpHelper {
 
     }
 
-    public static String getResponse() {
+    public String getResponse() {
         try {
 
             if (!socket.isConnected()) {
-                Login();
+                login();
             }
 
             StringBuilder builder = new StringBuilder();
@@ -88,7 +87,7 @@ public class TcpHelper {
     }
 
 
-    public static void Loginout() {
+    public void logout() {
         try {
             socket.close();
         } catch (IOException e) {

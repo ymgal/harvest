@@ -30,11 +30,15 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
 
 public class VndbHarvest extends Harvest {
 
-    private static final String PREFIX = "https://vndb.org/v";
+    private final String PREFIX = "https://vndb.org/v";
+
+    private final TcpHelper tcpHelper = new TcpHelper();
+
+    private final VndbGetMethod vndbGetMethod = new VndbGetMethod(tcpHelper);
 
     public VndbHarvest(String gameUrl) {
         super(gameUrl);
@@ -51,7 +55,7 @@ public class VndbHarvest extends Harvest {
     protected HarvestResult exec(String gameUrl, InetSocketAddress proxy) {
 
         Integer vnid = Integer.parseInt(gameUrl.split(PREFIX)[1]);
-        TcpHelper.Login();
+        tcpHelper.login();
         GameArchive gameAcrhive = getGameAcrhive(vnid);
         OrgArchive orgArchive = getOrgArchive(gameAcrhive.getDeveloper());
         List<PersonArchive> personArchiveList = getPersonArchiveList(gameAcrhive.getStaff().stream().map(x -> x.getSid()).toArray(x -> new Integer[x]));
@@ -60,12 +64,12 @@ public class VndbHarvest extends Harvest {
         HarvestResult harvestResult = HarvestResult.ok(
                 gameAcrhive, orgArchive, personArchiveList, characterArchiveList
         );
-        TcpHelper.Loginout();
+        tcpHelper.logout();
 
         return harvestResult;
     }
 
-    public static GameArchive getGameAcrhive(Integer vnid) {
+    public GameArchive getGameAcrhive(Integer vnid) {
 
         // HTTP查询数据
         VndbFilter vndbFilter = new VndbFilter(FilterName.ID.getFilterName(), FilterOperator.EQ.getOperator(), vnid + "");
@@ -102,7 +106,7 @@ public class VndbHarvest extends Harvest {
         List<Exlink> linksByHtml = VndbGetMethodByHttp.getLinksByHtml(PREFIX + vnid);
         List<Website> websites = linksByHtml.stream()
                 .map(x -> new Website(x.getName(), x.getUrl()))
-                .collect(Collectors.toList());
+                .collect(toList());
 
         archive.setWebsite(websites);
 
@@ -113,7 +117,7 @@ public class VndbHarvest extends Harvest {
         archive.setTypeDesc("");
         // 开发商
         // 有多家开发商，取第一家
-        if (vn.getDevelopers() != null) {
+        if (vn.getDevelopers() != null && !vn.getDevelopers().isEmpty()) {
             archive.setDeveloper(Integer.parseInt(vn.getDevelopers().get(0).getId().replace("p", "")));
         }
 
@@ -138,7 +142,7 @@ public class VndbHarvest extends Harvest {
 
 
         // 角色
-        VndbResponse<Character> character_tcp = VndbGetMethod.GetCharacter(VndbFilters.VisualNovel.Equals(vnid).toString());
+        VndbResponse<Character> character_tcp = vndbGetMethod.GetCharacter(VndbFilters.VisualNovel.Equals(vnid).toString());
         if (character_tcp != null && character_tcp.getItems() != null) {
             List<GameArchive.Characters> characters = character_tcp.getItems().stream().map(x -> {
                 return new GameArchive().new Characters(
@@ -147,13 +151,13 @@ public class VndbHarvest extends Harvest {
                                 .findFirst().map(VoiceActorMetadata::getId).orElse(0),
                         x.getVns().stream().filter(p -> Objects.equals(p[0], vnid)).findFirst().map(m -> (String) m[3]).get().equals("main") ? 1 : 0
                 );
-            }).collect(Collectors.toList());
+            }).collect(toList());
             archive.setCharacters(characters);
         }
 
 
         // 发售信息， 可能发售了多个平台  国家没有只有语言  LocalDate格式化的问题
-        VndbResponse<Release> release_tcp = VndbGetMethod.GetRelease(VndbFilters.VisualNovel.Equals(vnid).toString());
+        VndbResponse<Release> release_tcp = vndbGetMethod.GetRelease(VndbFilters.VisualNovel.Equals(vnid).toString());
         if (release_tcp != null && release_tcp.getItems() != null) {
             List<GameArchive.Release> releases = release_tcp.getItems().stream()
                     .map(x -> {
@@ -167,7 +171,7 @@ public class VndbHarvest extends Harvest {
                         release.setRestrictionLevel(String.valueOf(x.getMinage()));
 
                         return release;
-                    }).collect(Collectors.toList());
+                    }).collect(toList());
 
             releases.removeIf(r -> StringUtil.isBlank(r.getReleaseName())
                     || StringUtil.isBlank(r.getPlatform())
@@ -182,23 +186,23 @@ public class VndbHarvest extends Harvest {
         }
 
         //Staff
-        VndbResponse<VisualNovel> visualNovelVndbResponse = VndbGetMethod.GetVisualNovel(VndbFilters.Id.Equals(vnid).toString());
+        VndbResponse<VisualNovel> visualNovelVndbResponse = vndbGetMethod.GetVisualNovel(VndbFilters.Id.Equals(vnid).toString());
         if (visualNovelVndbResponse != null && visualNovelVndbResponse.getItems() != null) {
             VisualNovel vn_tcp = visualNovelVndbResponse.getItems().get(0);
             List<GameArchive.Staff> staff = vn_tcp.getStaff().stream().map(x ->
                     new GameArchive().new Staff(x.getSid(), x.realName(), x.getNote(), x.getRole())
-            ).collect(Collectors.toList());
+            ).collect(toList());
             archive.setStaff(staff);
         }
 
         return archive;
     }
 
-    public static OrgArchive getOrgArchive(Integer orgid) {
+    public OrgArchive getOrgArchive(Integer orgid) {
 
         OrgArchive orgArchive = new OrgArchive();
 
-        VndbResponse<Producer> ProducerVndbResponse = VndbGetMethod.GetProducer(VndbFilters.Id.Equals(orgid).toString());
+        VndbResponse<Producer> ProducerVndbResponse = vndbGetMethod.GetProducer(VndbFilters.Id.Equals(orgid).toString());
         if (ProducerVndbResponse == null || ProducerVndbResponse.getItems() == null || ProducerVndbResponse.getItems().size() == 0) {
             return null;
         }
@@ -234,8 +238,8 @@ public class VndbHarvest extends Harvest {
         return orgArchive;
     }
 
-    public static List<PersonArchive> getPersonArchiveList(Integer[] staffIds) {
-        VndbResponse<Staff> StaffVndbResponse = VndbGetMethod.GetStaff(VndbFilters.Id.Equals(staffIds).toString());
+    public List<PersonArchive> getPersonArchiveList(Integer[] staffIds) {
+        VndbResponse<Staff> StaffVndbResponse = vndbGetMethod.GetStaff(VndbFilters.Id.Equals(staffIds).toString());
         if (StaffVndbResponse == null || StaffVndbResponse.getItems() == null || StaffVndbResponse.getItems().size() == 0) {
             return Collections.emptyList();
         }
@@ -284,8 +288,8 @@ public class VndbHarvest extends Harvest {
         return personArchiveList;
     }
 
-    public static List<CharacterArchive> getCharacterArchiveList(Integer vnid) {
-        VndbResponse<Character> CharacterVndbResponse = VndbGetMethod.GetCharacter(VndbFilters.VisualNovel.Equals(vnid).toString());
+    public List<CharacterArchive> getCharacterArchiveList(Integer vnid) {
+        VndbResponse<Character> CharacterVndbResponse = vndbGetMethod.GetCharacter(VndbFilters.VisualNovel.Equals(vnid).toString());
         if (CharacterVndbResponse == null || CharacterVndbResponse.getItems() == null || CharacterVndbResponse.getItems().size() == 0) {
             return Collections.emptyList();
         }

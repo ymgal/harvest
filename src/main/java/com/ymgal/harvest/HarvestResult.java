@@ -29,7 +29,11 @@ public class HarvestResult {
     @Valid
     private GameArchive game;
 
-    @NotNull(message = "org 不能为 null")
+    /**
+     * 2025.01.01 optimize
+     * If empty, the default value is used
+     */
+//    @NotNull(message = "org 不能为 null")
     @Valid
     private OrgArchive org;
 
