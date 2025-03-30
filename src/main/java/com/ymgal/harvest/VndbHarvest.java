@@ -2,6 +2,7 @@ package com.ymgal.harvest;
 
 import com.ymgal.harvest.model.archive.OrgArchive;
 import com.ymgal.harvest.model.archive.PersonArchive;
+import com.ymgal.harvest.utils.HarvestUtil;
 import com.ymgal.harvest.vndb.VndbGetMethodByHttp;
 import com.ymgal.harvest.vndb.helper.DateTimeHelper;
 import com.ymgal.harvest.vndb.helper.TcpHelper;
@@ -111,7 +112,9 @@ public class VndbHarvest extends Harvest {
         archive.setWebsite(websites);
 
         // 图片
-        archive.setMainImg(vn.getImage().getUrl());
+        if (vn.getImage() != null && vn.getImage().getUrl() != null && vn.getImage().getUrl().startsWith("http"))
+            archive.setMainImg(vn.getImage().getUrl());
+
         // 游戏类型
         // 没有类型描述字段
         archive.setTypeDesc("");
@@ -123,9 +126,7 @@ public class VndbHarvest extends Harvest {
 
         // 发售日期, TBA为未知，不设置
         String releaseDate = vn.getReleased();
-        if (!Objects.equals("TBA", releaseDate)) {
-            archive.setReleaseDate(LocalDate.parse(releaseDate));
-        }
+        archive.setReleaseDate(HarvestUtil.validDate(releaseDate));
 
         // 扩展名
         if (vn.getTitles() != null) {
@@ -139,7 +140,6 @@ public class VndbHarvest extends Harvest {
 
         //简介
         archive.setIntroduction(vn.getDescription() == null ? "" : vn.getDescription());
-
 
         // 角色
         VndbResponse<Character> character_tcp = vndbGetMethod.GetCharacter(VndbFilters.VisualNovel.Equals(vnid).toString());
@@ -319,7 +319,8 @@ public class VndbHarvest extends Harvest {
             characterArchive.setIntroduction("");
 
             if (character.getBirthday() != null && character.getBirthday().get(0) != null && character.getBirthday().get(1) != null) {
-                characterArchive.setBirthday(LocalDate.of(3000, character.getBirthday().get(1), character.getBirthday().get(0)));
+                String dateStr = "3000-" + character.getBirthday().get(1) + "-" + character.getBirthday().get(0);
+                characterArchive.setBirthday(HarvestUtil.validDate(dateStr));
             }
             characterArchive.setMainImg(character.getImage());
 
