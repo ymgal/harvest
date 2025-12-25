@@ -12,6 +12,8 @@ public class HarvestUtil {
             return LocalDate.parse(dateStr, formatter); // 解析成功，格式正确
         } catch (DateTimeException e) {
             return null; // 解析失败，格式错误
+        } catch (Exception e) {
+            return null;
         }
     }
 }
