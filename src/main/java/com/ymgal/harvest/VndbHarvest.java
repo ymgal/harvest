@@ -22,9 +22,10 @@ import com.ymgal.harvest.vndb.modelhttp.enums.FilterName;
 import com.ymgal.harvest.vndb.modelhttp.enums.FilterOperator;
 
 import java.net.InetSocketAddress;
+import java.time.LocalDateTime;
 import java.util.*;
 
-public class VndbHarvest extends Harvest {
+public class VndbHarvest extends Harvest<HarvestResult> {
 
     private final String PREFIX = "https://vndb.org/v";
 
@@ -50,7 +51,7 @@ public class VndbHarvest extends Harvest {
 
         Integer vnid = Integer.parseInt(gameUrl.split(PREFIX)[1]);
         tcpHelper.login();
-        GameArchive gameAcrhive = getGameAcrhive(vnid);
+        GameArchive gameAcrhive = getGameArchive(vnid);
         OrgArchive orgArchive = getOrgArchive(gameAcrhive.getDeveloper());
         List<PersonArchive> personArchiveList = getPersonArchiveList(gameAcrhive.getStaff().stream().map(x -> x.getSid()).toArray(x -> new Integer[x]));
         List<CharacterArchive> characterArchiveList = getCharacterArchiveList(vnid);
@@ -63,7 +64,12 @@ public class VndbHarvest extends Harvest {
         return harvestResult;
     }
 
-    public GameArchive getGameAcrhive(Integer vnid) {
+    @Override
+    protected HarvestResult createErrorResult(LocalDateTime start, Exception e) {
+        return HarvestResult.error(start, e);
+    }
+
+    public GameArchive getGameArchive(Integer vnid) {
 
         // HTTP查询数据
         VndbFilter vndbFilter = new VndbFilter(FilterName.ID.getFilterName(), FilterOperator.EQ.getOperator(), vnid + "");

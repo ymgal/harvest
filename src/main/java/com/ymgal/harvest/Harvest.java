@@ -14,7 +14,7 @@ import java.util.concurrent.ForkJoinPool;
  * <p>
  * Create by sorakylin on 2023-10-16
  */
-public abstract class Harvest {
+public abstract class Harvest<T extends HarvestMetadata> {
 
     /**
      * 收集的目标游戏档案地址
@@ -35,15 +35,15 @@ public abstract class Harvest {
      */
     protected abstract void validateUrl(String gameUrl);
 
-    public final CompletableFuture<HarvestResult> get() {
+    public final CompletableFuture<T> get() {
         return get(null, ForkJoinPool.commonPool());
     }
 
-    public final CompletableFuture<HarvestResult> get(InetSocketAddress proxy) {
+    public final CompletableFuture<T> get(InetSocketAddress proxy) {
         return get(proxy, ForkJoinPool.commonPool());
     }
 
-    public final CompletableFuture<HarvestResult> get(Executor executor) {
+    public final CompletableFuture<T> get(Executor executor) {
         return get(null, executor);
     }
 
@@ -54,7 +54,7 @@ public abstract class Harvest {
      * @param executor 线程池
      * @return 完整档案
      */
-    public final CompletableFuture<HarvestResult> get(InetSocketAddress proxy, Executor executor) {
+    public final CompletableFuture<T> get(InetSocketAddress proxy, Executor executor) {
         if (Objects.isNull(executor)) throw new IllegalArgumentException("The [executor] not be null!");
         return CompletableFuture.supplyAsync(() -> safeExecution(proxy), executor);
     }
@@ -62,16 +62,18 @@ public abstract class Harvest {
     /**
      * 不允许内部异常中断上下文执行
      */
-    protected final HarvestResult safeExecution(InetSocketAddress proxy) {
+    protected final T safeExecution(InetSocketAddress proxy) {
         LocalDateTime start = LocalDateTime.now();
 
         try {
-            HarvestResult res = exec(this.gameUrl, proxy);
+            T res = exec(this.gameUrl, proxy);
             res.setGameUrl(this.gameUrl);
             res.setTaskStartTime(start);
             return res;
         } catch (Exception e) {
-            return HarvestResult.error(start, e);
+            T errorResult = createErrorResult(start, e);
+            errorResult.setGameUrl(this.gameUrl);
+            return errorResult;
         }
     }
 
@@ -83,5 +85,7 @@ public abstract class Harvest {
      * @return
      * @throws Exception
      */
-    protected abstract HarvestResult exec(String gameUrl, InetSocketAddress proxy) throws Exception;
+    protected abstract T exec(String gameUrl, InetSocketAddress proxy) throws Exception;
+
+    protected abstract T createErrorResult(LocalDateTime start, Exception e);
 }

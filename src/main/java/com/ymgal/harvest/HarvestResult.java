@@ -15,7 +15,7 @@ import java.util.List;
  * 包括机构、角色、人物等等的完整游戏档案结果
  */
 @Data
-public class HarvestResult {
+public class HarvestResult implements HarvestMetadata {
 
     private String gameUrl;
 
