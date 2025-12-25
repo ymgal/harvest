@@ -1,38 +1,26 @@
 package com.ymgal.harvest;
 
-import com.ymgal.harvest.model.archive.CharacterArchive;
-import com.ymgal.harvest.utils.VndbConverter;
-import com.ymgal.harvest.vndb.VndbGetMethod;
-import com.ymgal.harvest.vndb.filter.VndbFilters;
-import com.ymgal.harvest.vndb.helper.TcpHelper;
-import com.ymgal.harvest.vndb.model.Character.Character;
-import com.ymgal.harvest.vndb.model.VndbResponse;
+import com.ymgal.harvest.vndb.helper.JsonHelper;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class CharacterTests {
 
-    private final TcpHelper tcpHelper = new TcpHelper();
-
-    private final VndbGetMethod vndbGetMethod = new VndbGetMethod(tcpHelper);
-
     public static void main(String[] args) {
-        CharacterTests characterTests = new CharacterTests();
 
-        int id = 100001;
+        Harvest<VndbClassifiedHarvest.Character> harvest = new VndbClassifiedHarvest().new CharacterHarvest("https://vndb.org/c100001");
 
-        characterTests.tcpHelper.login();
+        harvest.get().thenApply(r -> {
+            Duration between = Duration.between(r.getTaskStartTime(), LocalDateTime.now());
+            System.out.println("获取成功 >>>>>>>>> 总共花费时间为: " + between.toMillis());
 
-        try {
-            VndbResponse<Character> response = characterTests.vndbGetMethod.GetCharacter(VndbFilters.Id.Equals(id).toString());
-            if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
-                System.out.println("response is null or empty");
-                return;
+            if (r.getError() != null) {
+                r.getError().printStackTrace();
             }
 
-            Character character = response.getItems().get(0);
-            CharacterArchive characterArchive = new VndbConverter().toCharacterArchive(character);
-            System.out.println(characterArchive);
-        } finally {
-            characterTests.tcpHelper.logout();
-        }
+            ValidateUtil.validate(r);
+            return r;
+        }).thenApply(JsonHelper::serialize).thenAccept(System.out::println).join();
     }
 }

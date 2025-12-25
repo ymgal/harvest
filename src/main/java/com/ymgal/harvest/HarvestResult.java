@@ -5,6 +5,7 @@ import com.ymgal.harvest.model.archive.PersonArchive;
 import com.ymgal.harvest.model.archive.CharacterArchive;
 import com.ymgal.harvest.model.archive.GameArchive;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -14,14 +15,9 @@ import java.util.List;
 /**
  * 包括机构、角色、人物等等的完整游戏档案结果
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class HarvestResult implements HarvestMetadata {
-
-    private String gameUrl;
-
-    private LocalDateTime taskStartTime;
-
-    private Exception error;
+public class HarvestResult extends BaseHarvestResult implements HarvestMetadata {
 
     //--- archives ---
 
