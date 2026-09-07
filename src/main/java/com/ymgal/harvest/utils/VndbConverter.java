@@ -210,7 +210,7 @@ public class VndbConverter {
 
         // 别名
         orgArchive.setExtensionNames(Collections.emptyList());
-        if (producer.getAliases() != null && producer.getAliases().trim().length() > 0) {
+        if (producer.getAliases() != null && !producer.getAliases().trim().isEmpty()) {
             orgArchive.setExtensionNames(
                     Collections.singletonList(new ExtensionName(producer.getAliases())));
         }
@@ -239,7 +239,7 @@ public class VndbConverter {
             List<ExtensionName> names = staff.getAliases()
                     .stream()
                     .map(a -> (String) (a[2] == null ? a[1] : a[2]))
-                    .filter(name -> name != null && name.trim().length() > 0)
+                    .filter(name -> name != null && !name.trim().isEmpty())
                     .map(ExtensionName::new)
                     .collect(toList());
             personArchive.setExtensionNames(names);
@@ -311,14 +311,14 @@ public class VndbConverter {
         if (character.getAliases() != null) {
             String[] aliaseList = character.getAliases().split("\n");
             List<ExtensionName> names = Arrays.stream(aliaseList)
-                    .filter(x -> x != null && x.trim().length() > 0)
+                    .filter(x -> x != null && !x.trim().isEmpty())
                     .map(ExtensionName::new)
                     .collect(toList());
             characterArchive.setExtensionNames(names);
         }
 
-        // 简介（目前一堆无意义的英文，直接去掉）
-        characterArchive.setIntroduction("");
+        // 简介
+        characterArchive.setIntroduction(character.getDescription() == null ? "" : character.getDescription());
 
         // 生日
         if (character.getBirthday() != null
