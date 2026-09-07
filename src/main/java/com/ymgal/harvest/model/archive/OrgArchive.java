@@ -5,6 +5,7 @@ import com.ymgal.harvest.model.Website;
 import lombok.Data;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
@@ -14,8 +15,13 @@ public class OrgArchive {
 
     private Integer vndbPid;
 
-    @NotNull(message = "机构名 必传")
-    private String orgName;
+    @NotEmpty(message = "名称必传")
+    private String name;
+
+    /**
+     * VNDB 原名
+     */
+    private String originalName;
 
     private String mainImg;
 

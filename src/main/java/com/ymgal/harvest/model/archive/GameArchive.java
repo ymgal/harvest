@@ -41,6 +41,11 @@ public class GameArchive {
     private String name;
 
     /**
+     * VNDB 原名
+     */
+    private String originalName;
+
+    /**
      * 拓展名称
      */
     @Valid
@@ -160,7 +165,12 @@ public class GameArchive {
          * 员工参与时使用的名字
          */
         @NotEmpty(message = "STAFF员工名不能为空")
-        private String empName;
+        private String name;
+
+        /**
+         * VNDB 原名
+         */
+        private String originalName;
 
         /**
          * 员工备注

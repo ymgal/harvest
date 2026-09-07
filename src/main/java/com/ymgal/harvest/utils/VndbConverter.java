@@ -59,11 +59,9 @@ public class VndbConverter {
         // ID
         archive.setVndbId(Integer.parseInt(vn.getId().replace("v", "")));
 
-        // 标题
-        archive.setName(vn.getAlttitle());
-        if (archive.getName() == null || archive.getName().isEmpty()) {
-            archive.setName(vn.getTitle());
-        }
+        // 名称字段与 VNDB 保持一致，具体使用哪个名称由调用方业务决定
+        archive.setName(vn.getTitle());
+        archive.setOriginalName(vn.getAlttitle());
 
         // 是否有汉化
         if (vn.getLanguages() != null) {
@@ -103,6 +101,7 @@ public class VndbConverter {
             List<ExtensionName> extensionNames = vn.getTitles().stream()
                     .filter(x -> x.getTitle() != null && x.getTitle().trim().length() > 0)
                     .filter(x -> !Objects.equals(x.getTitle(), archive.getName()))
+                    .filter(x -> !Objects.equals(x.getTitle(), archive.getOriginalName()))
                     .map(x -> new ExtensionName(x.getTitle(), x.getLang()))
                     .collect(toList());
             archive.setExtensionName(extensionNames);
@@ -169,7 +168,7 @@ public class VndbConverter {
         if (visualNovel != null && visualNovel.getStaff() != null) {
             List<GameArchive.Staff> staff = visualNovel.getStaff().stream()
                     .map(x -> new GameArchive().new Staff(
-                            x.getSid(), x.realName(), x.getNote(), x.getRole()))
+                            x.getSid(), x.getName(), x.getOriginal(), x.getNote(), x.getRole()))
                     .collect(toList());
             archive.setStaff(staff);
         }
@@ -191,7 +190,8 @@ public class VndbConverter {
         OrgArchive orgArchive = new OrgArchive();
 
         orgArchive.setVndbPid(producer.getId());
-        orgArchive.setOrgName(producer.realName());
+        orgArchive.setName(producer.getName());
+        orgArchive.setOriginalName(producer.getOriginal());
         orgArchive.setCountry(producer.getLanguage());
         orgArchive.setIntroduction(producer.getDescription() == null ? "" : producer.getDescription());
 
@@ -231,7 +231,8 @@ public class VndbConverter {
 
         PersonArchive personArchive = new PersonArchive();
         personArchive.setVndbSid(staff.getId());
-        personArchive.setName(staff.realName());
+        personArchive.setName(staff.getName());
+        personArchive.setOriginalName(staff.getOriginal());
         personArchive.setExtensionNames(new ArrayList<>());
 
         // 别名
@@ -304,7 +305,8 @@ public class VndbConverter {
 
         CharacterArchive characterArchive = new CharacterArchive();
         characterArchive.setVndbCid(character.getId());
-        characterArchive.setName(character.realName());
+        characterArchive.setName(character.getName());
+        characterArchive.setOriginalName(character.getOriginal());
 
         // 扩展名（别名）
         characterArchive.setExtensionNames(new ArrayList<>());

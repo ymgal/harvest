@@ -16,6 +16,11 @@ public class CharacterArchive {
     @NotEmpty(message = "名称必传")
     private String name;
 
+    /**
+     * VNDB 原名
+     */
+    private String originalName;
+
     @NotNull(message = "拓展名必传")
     @Valid
     private List<ExtensionName> extensionNames;
