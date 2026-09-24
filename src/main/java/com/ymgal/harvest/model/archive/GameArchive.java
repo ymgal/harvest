@@ -5,8 +5,8 @@ import com.ymgal.harvest.model.Website;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.List;
 

@@ -4,7 +4,7 @@ package com.ymgal.harvest.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 @Data
 @AllArgsConstructor
